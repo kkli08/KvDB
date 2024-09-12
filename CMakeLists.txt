@@ -41,7 +41,7 @@ enable_testing()
 add_executable(runTests
         # Test files
         tests/binarytree_tests.cpp
-#        tests/redblacktree_unittest.cpp
+        tests/redblacktree_unittest.cpp
 #        tests/api_unittest.cpp
 #        tests/memtable_unittest.cpp
 #        tests/sstIndex_unittest.cpp
@@ -52,7 +52,7 @@ add_executable(runTests
         # Source files required by tests
         tree/BinaryTree.cpp
         tree/TreeNode.cpp
-#        tree/RedBlackTree.cpp
+        tree/RedBlackTree.cpp
 #        api/api.cpp
 #        memtable/Memtable.cpp
 #        SSTIndex/SSTIndex.cpp
