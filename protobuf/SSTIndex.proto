@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package sstindex;
+
+import "KeyValue.proto";
+
+
+// SSTInfo message that stores filename, smallest_key, and largest_key
+message SSTInfo {
+  string filename = 1;
+  KeyValue smallest_key = 2;  // Using the KeyValue message from Protobuf
+  KeyValue largest_key = 3;   // Using the KeyValue message from Protobuf
+}
+
+// SSTIndex message that stores all SSTInfo entries
+message SSTIndex {
+  repeated SSTInfo sst_infos = 1;  // A list of SSTInfo messages
+}

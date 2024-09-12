@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)  # Specify the minimum version of CMake
+cmake_minimum_required(VERSION 3.10)
 
 # Project name
 project(KVStore)
@@ -10,15 +10,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find the required protobuf package
 find_package(Protobuf REQUIRED)
 
-# Specify the path to the .proto file
-set(PROTO_FILE ${PROJECT_SOURCE_DIR}/kv/KeyValue.proto)
+# Specify the path to the .proto files
+set(PROTO_FILES
+        ${PROJECT_SOURCE_DIR}/protobuf/KeyValue.proto
+        ${PROJECT_SOURCE_DIR}/protobuf/SSTIndex.proto
+)
 
-# Generate the .pb.cc and .pb.h files from the .proto file
-protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILE})
+# Set the output directory for the generated .pb.cc and .pb.h files
+set(GENERATED_PROTO_DIR ${PROJECT_SOURCE_DIR}/protobuf)
 
-## Specify the location of the generated .pb.cc and .pb.h files
-#set(PROTO_SRCS ${PROJECT_SOURCE_DIR}/kv/KeyValue.pb.cc)
-#set(PROTO_HDRS ${PROJECT_SOURCE_DIR}/kv/KeyValue.pb.h)
+# Command to generate .pb.cc and .pb.h files from .proto files
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILES})
+
+# Ensure that the generated files are placed in the protobuf directory
+set(PROTO_SRCS
+        ${GENERATED_PROTO_DIR}/KeyValue.pb.cc
+        ${GENERATED_PROTO_DIR}/SSTIndex.pb.cc
+)
+set(PROTO_HDRS
+        ${GENERATED_PROTO_DIR}/KeyValue.pb.h
+        ${GENERATED_PROTO_DIR}/SSTIndex.pb.h
+)
 
 # Include GoogleTest via FetchContent
 include(FetchContent)
@@ -42,10 +54,10 @@ add_executable(runTests
         # Test files
         tests/binarytree_tests.cpp
         tests/redblacktree_unittest.cpp
-#        tests/api_unittest.cpp
+        # tests/api_unittest.cpp
         tests/memtable_unittest.cpp
-#        tests/sstIndex_unittest.cpp
-#        tests/encryption_unittest.cpp
+        # tests/sstIndex_unittest.cpp
+        # tests/encryption_unittest.cpp
         tests/kvpair_unittest.cpp
         tests/file_manager_unittest.cpp
 
@@ -53,10 +65,10 @@ add_executable(runTests
         tree/BinaryTree.cpp
         tree/TreeNode.cpp
         tree/RedBlackTree.cpp
-#        api/api.cpp
+        # api/api.cpp
         memtable/Memtable.cpp
-#        SSTIndex/SSTIndex.cpp
-#        AesEncryption/Encryption.h
+        SSTIndex/SSTIndex.cpp
+        # AesEncryption/Encryption.h
         FileManager/FileManager.cpp
         kv/KeyValue.cpp
         ${PROTO_SRCS}
@@ -69,32 +81,18 @@ target_link_libraries(runTests gtest gtest_main OpenSSL::Crypto ${Protobuf_LIBRA
 # Register tests with CTest
 add_test(NAME runTests COMMAND runTests)
 
-
-## ---- MAIN TARGET ----
-## List of source files
-#set(SOURCE_FILES
-#        main.cpp
-#        api/api.cpp
-#        memtable/Memtable.cpp
-#        tree/BinaryTree.cpp
-#        tree/TreeNode.cpp
-#        tree/RedBlackTree.cpp
-#        SSTIndex/SSTIndex.cpp
-#        kv/KeyValue.cpp
-#        FileManager/FileManager.cpp
-#)
-#
-## Add the executable
-#add_executable(main ${SOURCE_FILES} ${PROTO_SRCS})
-#target_link_libraries(main ${Protobuf_LIBRARIES})
-#
 # Include directories (header files)
 include_directories(
-#        ${PROJECT_SOURCE_DIR}/api
         ${PROJECT_SOURCE_DIR}/memtable
         ${PROJECT_SOURCE_DIR}/tree
-#        ${PROJECT_SOURCE_DIR}/SSTIndex
-#        ${PROJECT_SOURCE_DIR}/AesEncryption
+        ${PROJECT_SOURCE_DIR}/SSTIndex
+        # ${PROJECT_SOURCE_DIR}/AesEncryption
         ${PROJECT_SOURCE_DIR}/kv
         ${PROJECT_SOURCE_DIR}/FileManager
+        ${CMAKE_CURRENT_BINARY_DIR}
+        ${PROJECT_SOURCE_DIR}
 )
+
+# Add the generated protobuf directory to the include path
+include_directories(${GENERATED_PROTO_DIR})
+

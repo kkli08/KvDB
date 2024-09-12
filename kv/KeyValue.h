@@ -40,6 +40,10 @@ public:
     static KeyValueWrapper deserialize(std::istream& is);
 
     bool isEmpty() const;
+    // Constructor from a Protobuf KeyValue message
+    explicit KeyValueWrapper(const KeyValue& keyValueProto) : kv(keyValueProto) {};
+    // Convert KeyValueWrapper to Protobuf KeyValue
+    KeyValue toProto() const { return kv; };
     KeyValue kv;  // Protobuf-generated KeyValue object
 
     bool isDefault() const {
