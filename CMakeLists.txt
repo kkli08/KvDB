@@ -56,7 +56,7 @@ add_executable(runTests
         tests/redblacktree_unittest.cpp
         # tests/api_unittest.cpp
         tests/memtable_unittest.cpp
-        # tests/sstIndex_unittest.cpp
+        tests/sstIndex_unittest.cpp
         # tests/encryption_unittest.cpp
         tests/kvpair_unittest.cpp
         tests/file_manager_unittest.cpp

@@ -46,9 +46,23 @@ void SSTIndex::flushToDisk() {
 // Deserialize SSTIndex from disk
 void SSTIndex::getAllSSTs() {
     std::string filepath = (path / "Index.sst").string();
+
+    // Check if the file exists
+    if (!fs::exists(filepath)) {
+        // If the file does not exist, create a new, empty Index.sst file
+        std::ofstream outfile(filepath, std::ios::binary);
+        if (!outfile.is_open()) {
+            throw std::runtime_error("SSTIndex::getAllSSTs() >>>> Failed to create new Index.sst file.");
+        }
+        outfile.close();  // Close the newly created file
+        return;  // No further logic needed, the file is empty
+    }
+
+    // If the file exists, proceed with deserialization
     sstindex::SSTIndex sstIndexProto = deserializeFromFile(filepath);
 
-    index.clear();  // Clear existing index
+    // Clear the current index to avoid duplication
+    index.clear();
 
     // Convert each Protobuf SSTInfo back into SSTInfo objects
     for (const auto& sstInfoProto : sstIndexProto.sst_infos()) {
@@ -57,6 +71,7 @@ void SSTIndex::getAllSSTs() {
         addSST(sstInfoProto.filename(), smallestKey, largestKey);
     }
 }
+
 
 // Search in a specific SST file
 KeyValueWrapper SSTIndex::SearchInSST(const std::string& filename, const KeyValueWrapper& _key) {
