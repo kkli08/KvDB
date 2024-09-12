@@ -47,7 +47,7 @@ add_executable(runTests
 #        tests/sstIndex_unittest.cpp
 #        tests/encryption_unittest.cpp
         tests/kvpair_unittest.cpp
-#        tests/file_manager_unittest.cpp
+        tests/file_manager_unittest.cpp
 
         # Source files required by tests
         tree/BinaryTree.cpp
@@ -57,7 +57,7 @@ add_executable(runTests
 #        memtable/Memtable.cpp
 #        SSTIndex/SSTIndex.cpp
 #        AesEncryption/Encryption.h
-#        FileManager/FileManager.cpp
+        FileManager/FileManager.cpp
         kv/KeyValue.cpp
         ${PROTO_SRCS}
         tests/treenode_unittests.cpp
@@ -96,5 +96,5 @@ include_directories(
 #        ${PROJECT_SOURCE_DIR}/SSTIndex
 #        ${PROJECT_SOURCE_DIR}/AesEncryption
         ${PROJECT_SOURCE_DIR}/kv
-#        ${PROJECT_SOURCE_DIR}/FileManager
+        ${PROJECT_SOURCE_DIR}/FileManager
 )

@@ -20,7 +20,7 @@ class RedBlackTree final : public BinaryTree {
         void preorder();
         // update with KeyValueWrapper Class
         vector<KeyValueWrapper> inOrderFlushToSst(); // tested
-        KeyValueWrapper getValue( KeyValueWrapper& kv); // tested
+        KeyValueWrapper getValue(KeyValueWrapper& kv); // tested
         void insert(KeyValueWrapper kv);   // done tested
         void updateExistedKeyValue(TreeNode *&root, KeyValueWrapper& kv); // tested
         void deleteKey(KeyValueWrapper kv);  // added
