@@ -51,7 +51,7 @@ add_executable(runTests
 
         # Source files required by tests
 #        tree/BinaryTree.cpp
-#        tree/TreeNode.cpp
+        tree/TreeNode.cpp
 #        tree/RedBlackTree.cpp
 #        api/api.cpp
 #        memtable/Memtable.cpp
@@ -60,6 +60,7 @@ add_executable(runTests
 #        FileManager/FileManager.cpp
         kv/KeyValue.cpp
         ${PROTO_SRCS}
+        tests/treenode_unittests.cpp
 )
 
 # Link Google Test and OpenSSL to the test executable
@@ -91,7 +92,7 @@ add_test(NAME runTests COMMAND runTests)
 include_directories(
 #        ${PROJECT_SOURCE_DIR}/api
 #        ${PROJECT_SOURCE_DIR}/memtable
-#        ${PROJECT_SOURCE_DIR}/tree
+        ${PROJECT_SOURCE_DIR}/tree
 #        ${PROJECT_SOURCE_DIR}/SSTIndex
 #        ${PROJECT_SOURCE_DIR}/AesEncryption
         ${PROJECT_SOURCE_DIR}/kv
