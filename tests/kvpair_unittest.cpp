@@ -4,6 +4,8 @@
 
 #include <gtest/gtest.h>
 #include <sstream>
+#include <filesystem>
+#include <fstream>
 #include "KeyValue.h"
 
 // Test for Key and Value Type Deduction
@@ -191,4 +193,85 @@ TEST(KeyValueWrapperTest, Print_KeyValue) {
 
     // Compare the redirected output to the expected output
     EXPECT_EQ(output.str(), expectedOutput);
+}
+
+
+
+
+
+namespace fs = std::filesystem;
+
+
+TEST(KeyValueWrapperTest, SerializedAndDeserializeDataintoSST) {
+    // Create a directory for testing, ensure it exists
+    fs::create_directories("test_db");
+
+    // Open a file for writing serialized data
+    std::ofstream file("test_db/sst_1.sst", std::ios::binary);
+    ASSERT_TRUE(file.is_open());
+
+    // Create a vector of KeyValueWrapper pairs
+    std::vector<KeyValueWrapper> kv_pairs = {
+        KeyValueWrapper(1, 100),
+        KeyValueWrapper(3.14, 1.618),
+        KeyValueWrapper("key1", "value1"),
+        KeyValueWrapper('A', 'Z')
+    };
+
+    // Serialize each KeyValueWrapper into the file with a size delimiter
+    for (const auto& kv : kv_pairs) {
+        // Write the size of the serialized message first
+        std::string serialized_message;
+        kv.kv.SerializeToString(&serialized_message);
+        uint32_t size = serialized_message.size();
+        file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+        file.write(serialized_message.data(), size);
+    }
+
+    file.close();  // Ensure the file is closed after writing
+
+    // Now, open the same file for reading and deserialize the data
+    std::ifstream input_file("test_db/sst_1.sst", std::ios::binary);
+    ASSERT_TRUE(input_file.is_open());
+
+    // Deserialize each KeyValueWrapper by reading size first
+    std::vector<KeyValueWrapper> deserialized_kv_pairs;
+    while (input_file.peek() != EOF) {
+        uint32_t size;
+        input_file.read(reinterpret_cast<char*>(&size), sizeof(size));  // Read the size of the next message
+        std::string serialized_message(size, '\0');
+        input_file.read(&serialized_message[0], size);  // Read the message data
+
+        KeyValueWrapper kvWrapper;
+        kvWrapper.kv.ParseFromString(serialized_message);  // Deserialize the KeyValueWrapper
+        deserialized_kv_pairs.push_back(kvWrapper);
+    }
+
+    input_file.close();  // Ensure the file is closed after reading
+
+    // Ensure that we have deserialized the same number of key-value pairs
+    ASSERT_EQ(kv_pairs.size(), deserialized_kv_pairs.size());
+
+    // Verify that each deserialized key-value pair matches the original
+    for (size_t i = 0; i < kv_pairs.size(); ++i) {
+        const auto& original = kv_pairs[i];
+        const auto& deserialized = deserialized_kv_pairs[i];
+
+        if (original.kv.key_case() == KeyValue::kIntKey) {
+            EXPECT_EQ(original.kv.int_key(), deserialized.kv.int_key());
+            EXPECT_EQ(original.kv.int_value(), deserialized.kv.int_value());
+        } else if (original.kv.key_case() == KeyValue::kDoubleKey) {
+            EXPECT_EQ(original.kv.double_key(), deserialized.kv.double_key());
+            EXPECT_EQ(original.kv.double_value(), deserialized.kv.double_value());
+        } else if (original.kv.key_case() == KeyValue::kStringKey) {
+            EXPECT_EQ(original.kv.string_key(), deserialized.kv.string_key());
+            EXPECT_EQ(original.kv.string_value(), deserialized.kv.string_value());
+        } else if (original.kv.key_case() == KeyValue::kCharKey) {
+            EXPECT_EQ(original.kv.char_key(), deserialized.kv.char_key());
+            EXPECT_EQ(original.kv.char_value(), deserialized.kv.char_value());
+        }
+    }
+
+    // Clean up: Delete the test directory and the file
+    fs::remove_all("test_db");
 }

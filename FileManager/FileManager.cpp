@@ -58,16 +58,20 @@ FlushSSTInfo FileManager::flushToDisk(const std::vector<KeyValueWrapper>& kv_pai
     FlushSSTInfo flushInfo;
     flushInfo.fileName = generateSstFilename();
 
+    // Ensure the directory exists
     if (!fs::exists(directory)) {
         throw std::runtime_error("FileManager::flushToDisk() >>>> Directory does not exist: " + directory.string());
     }
 
+    // Open file for binary writing
     std::ofstream file(directory / flushInfo.fileName, std::ios::binary);
     if (!file.is_open()) {
         throw std::runtime_error("FileManager::flushToDisk() >>>> Could not open SST file for writing.");
     }
 
-    if (kv_pairs.empty()) return flushInfo;
+    if (kv_pairs.empty()) {
+        return flushInfo;  // If the key-value pairs are empty, return early
+    }
 
     // Set smallest and largest keys
     flushInfo.smallest_key = kv_pairs.front();
@@ -77,68 +81,84 @@ FlushSSTInfo FileManager::flushToDisk(const std::vector<KeyValueWrapper>& kv_pai
     sstHeader.num_key_values = kv_pairs.size();
     sstHeader.header_checksum = sstHeader.calculateChecksum();
 
-    // Write the header
+    // Write the header to the file
     sstHeader.serialize(file);
 
-    // Write each KeyValueWrapper to the file
+    // Serialize each KeyValueWrapper to the file with a size delimiter
     for (const auto& kv : kv_pairs) {
-        if (!kv.kv.SerializeToOstream(&file)) {
-            std::cerr << "FileManager::flushToDisk() >>>> Failed to serialize KeyValueWrapper to stream." << std::endl;
-            break;
-        }
+        // Serialize the KeyValueWrapper to a string
+        std::string serialized_message;
+        kv.kv.SerializeToString(&serialized_message);
+
+        // Write the size of the serialized message first
+        uint32_t size = serialized_message.size();
+        file.write(reinterpret_cast<const char*>(&size), sizeof(size));
+
+        // Write the serialized message
+        file.write(serialized_message.data(), size);
     }
 
-    file.close();
+    file.close();  // Close the file after writing
     return flushInfo;
 }
 
 
 
+
 RedBlackTree* FileManager::loadFromDisk(const std::string& sst_filename) {
+    // Open the file for binary reading
     std::ifstream file(directory / sst_filename, std::ios::binary);
     if (!file.is_open()) {
         throw std::runtime_error("FileManager::loadFromDisk() >>>> Could not open SST file for reading.");
     }
 
-    // Check file size
+    // Check file size to handle empty files
     file.seekg(0, std::ios::end);
     std::streampos file_size = file.tellg();
     file.seekg(0, std::ios::beg);
 
     if (file_size == 0) {
         file.close();
-        return new RedBlackTree();  // Return empty tree if file is empty
+        return new RedBlackTree();  // Return an empty RedBlackTree if the file is empty
     }
 
     // Deserialize the SST header
     SSTHeader sstHeader = SSTHeader::deserialize(file);
     std::cout << "Header num_key_values: " << sstHeader.num_key_values << std::endl;
 
-    // Create a new RedBlackTree to store deserialized key-value pairs
+    // Create a new RedBlackTree to store the deserialized key-value pairs
     auto* tree = new RedBlackTree();
 
-    // Loop through and deserialize each KeyValueWrapper
+    // Deserialize each KeyValueWrapper using length-delimited reading
     for (uint32_t i = 0; i < sstHeader.num_key_values; ++i) {
+        // Check the stream state
         if (!file.good()) {
             std::cerr << "FileManager::loadFromDisk() >>>> File stream is not valid during deserialization." << std::endl;
             break;
         }
 
-        KeyValueWrapper kvWrapper;
-        if (!kvWrapper.kv.ParseFromIstream(&file)) {
-            std::cerr << "FileManager::loadFromDisk() >>>> Failed to parse KeyValueWrapper from stream." << std::endl;
-            break;
-        }
+        // Read the size of the next serialized message
+        uint32_t size;
+        file.read(reinterpret_cast<char*>(&size), sizeof(size));
 
-        // Insert deserialized kvWrapper into RedBlackTree
+        // Read the serialized message based on the size
+        std::string serialized_message(size, '\0');
+        file.read(&serialized_message[0], size);
+
+        // Parse the serialized message into a KeyValueWrapper
+        KeyValueWrapper kvWrapper;
+        kvWrapper.kv.ParseFromString(serialized_message);
+
+        // Insert the deserialized KeyValueWrapper into the RedBlackTree
         tree->insert(kvWrapper);
 
         std::cout << "Deserialized Key: " << kvWrapper.kv.int_key() << ", Value: " << kvWrapper.kv.int_value() << std::endl;
     }
 
-    file.close();
+    file.close();  // Close the file after reading
     return tree;
 }
+
 
 
 
