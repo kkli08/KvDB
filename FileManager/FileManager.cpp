@@ -152,7 +152,7 @@ RedBlackTree* FileManager::loadFromDisk(const std::string& sst_filename) {
         // Insert the deserialized KeyValueWrapper into the RedBlackTree
         tree->insert(kvWrapper);
 
-        std::cout << "Deserialized Key: " << kvWrapper.kv.int_key() << ", Value: " << kvWrapper.kv.int_value() << std::endl;
+        // std::cout << "Deserialized Key: " << kvWrapper.kv.int_key() << ", Value: " << kvWrapper.kv.int_value() << std::endl;
     }
 
     file.close();  // Close the file after reading

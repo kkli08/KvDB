@@ -35,7 +35,7 @@ Memtable::~Memtable() {
     delete tree;
 }
 
-FlushSSTInfo Memtable::put(const KeyValue& kv) {
+FlushSSTInfo Memtable::put(const KeyValueWrapper& kv) {
     FlushSSTInfo info;
 
     // Check if the memtable size limit is not reached
@@ -67,7 +67,7 @@ FlushSSTInfo Memtable::put(const KeyValue& kv) {
 }
 
 
-KeyValue Memtable::get(const KeyValue& kv) const {
+KeyValueWrapper Memtable::get(const KeyValueWrapper& kv) {
     return tree->getValue(kv);
 }
 
@@ -106,7 +106,7 @@ std::string Memtable::generateSstFilename() {
 }
 
 // scan the tree and insert the kv-pairs<k,v> into res where small_key <= k && k <= large_key
-void Memtable::Scan(KeyValue small_key, KeyValue large_key, set<KeyValue>& res) {
+void Memtable::Scan(KeyValueWrapper small_key, KeyValueWrapper large_key, set<KeyValueWrapper>& res) {
     tree->Scan(tree->getRoot(), small_key, large_key, res);
 }
 

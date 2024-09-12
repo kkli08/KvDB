@@ -22,10 +22,10 @@ class Memtable {
         void set_path(fs::path);
         fs::path get_path();
 
-        // update with KeyValue Class
-        void Scan(KeyValue small_key, KeyValue large_key, set<KeyValue>& res);
-        FlushSSTInfo put(const KeyValue&);
-        KeyValue get(const KeyValue& kv) const;
+        // update with KeyValueWrapper Class
+        void Scan(KeyValueWrapper small_key, KeyValueWrapper large_key, set<KeyValueWrapper>& res);
+        FlushSSTInfo put(const KeyValueWrapper&);
+        KeyValueWrapper get(const KeyValueWrapper& kv);
 
         // helper function
         string generateSstFilename();

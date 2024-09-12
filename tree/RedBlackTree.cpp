@@ -67,7 +67,7 @@ void RedBlackTree::inorderTraversal(TreeNode* node, vector<KeyValueWrapper> &kv_
     inorderTraversal(node->right, kv_pairs);
 }
 
-KeyValueWrapper RedBlackTree::getValue(KeyValueWrapper& kv) {
+KeyValueWrapper RedBlackTree::getValue(const KeyValueWrapper& kv) {
     if (search(kv)) {
         // Return the found KeyValueWrapper
         return getValue(root, kv);
@@ -77,7 +77,7 @@ KeyValueWrapper RedBlackTree::getValue(KeyValueWrapper& kv) {
     return KeyValueWrapper();
 }
 
-KeyValueWrapper RedBlackTree::getValue(TreeNode *&node, KeyValueWrapper& kv) {
+KeyValueWrapper RedBlackTree::getValue(TreeNode *&node, const KeyValueWrapper& kv) {
     if (node->keyValue == kv) {
         // Return the value from the matching node
         return node->keyValue;

@@ -20,7 +20,7 @@ class RedBlackTree final : public BinaryTree {
         void preorder();
         // update with KeyValueWrapper Class
         vector<KeyValueWrapper> inOrderFlushToSst(); // tested
-        KeyValueWrapper getValue(KeyValueWrapper& kv); // tested
+        KeyValueWrapper getValue(const KeyValueWrapper& kv); // tested
         void insert(KeyValueWrapper kv);   // done tested
         void updateExistedKeyValue(TreeNode *&root, KeyValueWrapper& kv); // tested
         void deleteKey(KeyValueWrapper kv);  // added
@@ -43,7 +43,7 @@ class RedBlackTree final : public BinaryTree {
         TreeNode *maxValueNode(TreeNode *&); // added
         // update with KeyValueWrapper Class
         void inorderTraversal(TreeNode *, vector<KeyValueWrapper> &);
-        KeyValueWrapper getValue(TreeNode *&, KeyValueWrapper& kv);
+        KeyValueWrapper getValue(TreeNode *&, const KeyValueWrapper& kv);
         TreeNode* insert(TreeNode *&, TreeNode *&); // done
         TreeNode* deleteBST(TreeNode *&, KeyValueWrapper kv);    // added
 
