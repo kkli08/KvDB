@@ -47,12 +47,13 @@ TEST(BinaryTreeTest, InsertAndSearchString) {
 TEST(BinaryTreeTest, InsertAndSearchChar) {
     BinaryTree tree;
     tree.insert('A', 100);
+    tree.insert(10, 101);
 
     // Test if the inserted key can be found
     EXPECT_TRUE(tree.search('A'));
 
     // Test if a non-existent key is not found
-    EXPECT_FALSE(tree.search('B'));
+    EXPECT_FALSE(tree.search('C'));
 }
 
 // Test inserting multiple keys of different types

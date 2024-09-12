@@ -49,15 +49,18 @@ bool BinaryTree::search(TreeNode* node, const KeyValueWrapper& kv) {
     if (node == nullptr) {
         return false;  // Not found
     }
+
     // Compare the key of the node with the key in the KeyValueWrapper
     if (kv < node->keyValue) {
         return search(node->left, kv);  // Search in the left subtree
     } else if (node->keyValue < kv) {
         return search(node->right, kv);  // Search in the right subtree
     } else {
-        return node->keyValue == kv; // Found (keys are equal)
+        // If neither key is less than the other, they are equal
+        return node->keyValue == kv;  // Return true if they are equal
     }
 }
+
 
 
 // Inorder traversal
