@@ -69,22 +69,30 @@ FlushSSTInfo FileManager::flushToDisk(const std::vector<KeyValueWrapper>& kv_pai
 
     if (kv_pairs.empty()) return flushInfo;
 
+    // Set smallest and largest keys
     flushInfo.smallest_key = kv_pairs.front();
     flushInfo.largest_key = kv_pairs.back();
 
     // Create the header
     sstHeader.num_key_values = kv_pairs.size();
     sstHeader.header_checksum = sstHeader.calculateChecksum();
+
+    // Write the header
     sstHeader.serialize(file);
 
-    // Serialize each KeyValueWrapper using Protobuf's built-in serialization method
+    // Write each KeyValueWrapper to the file
     for (const auto& kv : kv_pairs) {
-        kv.kv.SerializeToOstream(&file);  // Directly serialize the KeyValueWrapper to the file
+        if (!kv.kv.SerializeToOstream(&file)) {
+            std::cerr << "FileManager::flushToDisk() >>>> Failed to serialize KeyValueWrapper to stream." << std::endl;
+            break;
+        }
     }
 
     file.close();
     return flushInfo;
 }
+
+
 
 RedBlackTree* FileManager::loadFromDisk(const std::string& sst_filename) {
     std::ifstream file(directory / sst_filename, std::ios::binary);
@@ -92,28 +100,47 @@ RedBlackTree* FileManager::loadFromDisk(const std::string& sst_filename) {
         throw std::runtime_error("FileManager::loadFromDisk() >>>> Could not open SST file for reading.");
     }
 
+    // Check file size
     file.seekg(0, std::ios::end);
     std::streampos file_size = file.tellg();
     file.seekg(0, std::ios::beg);
 
     if (file_size == 0) {
         file.close();
-        return new RedBlackTree();
+        return new RedBlackTree();  // Return empty tree if file is empty
     }
 
+    // Deserialize the SST header
     SSTHeader sstHeader = SSTHeader::deserialize(file);
+    std::cout << "Header num_key_values: " << sstHeader.num_key_values << std::endl;
 
+    // Create a new RedBlackTree to store deserialized key-value pairs
     auto* tree = new RedBlackTree();
 
+    // Loop through and deserialize each KeyValueWrapper
     for (uint32_t i = 0; i < sstHeader.num_key_values; ++i) {
+        if (!file.good()) {
+            std::cerr << "FileManager::loadFromDisk() >>>> File stream is not valid during deserialization." << std::endl;
+            break;
+        }
+
         KeyValueWrapper kvWrapper;
-        kvWrapper.kv.ParseFromIstream(&file);  // Deserialize the KeyValueWrapper from the file
-        tree->insert(kvWrapper);  // Insert into the RedBlackTree
+        if (!kvWrapper.kv.ParseFromIstream(&file)) {
+            std::cerr << "FileManager::loadFromDisk() >>>> Failed to parse KeyValueWrapper from stream." << std::endl;
+            break;
+        }
+
+        // Insert deserialized kvWrapper into RedBlackTree
+        tree->insert(kvWrapper);
+
+        std::cout << "Deserialized Key: " << kvWrapper.kv.int_key() << ", Value: " << kvWrapper.kv.int_value() << std::endl;
     }
 
     file.close();
     return tree;
 }
+
+
 
 
 

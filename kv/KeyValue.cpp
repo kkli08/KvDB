@@ -28,6 +28,19 @@ bool KeyValueWrapper::isEmpty() const {
 
 // Comparison operator
 bool KeyValueWrapper::operator<(const KeyValueWrapper& other) const {
+    // Handle mixed numeric-type comparisons by casting both to double
+    if ((kv.key_case() == KeyValue::kIntKey || kv.key_case() == KeyValue::kLongKey || kv.key_case() == KeyValue::kDoubleKey) &&
+        (other.kv.key_case() == KeyValue::kIntKey || other.kv.key_case() == KeyValue::kLongKey || other.kv.key_case() == KeyValue::kDoubleKey)) {
+
+        double thisKey = (kv.key_case() == KeyValue::kIntKey) ? kv.int_key() :
+                         (kv.key_case() == KeyValue::kLongKey) ? kv.long_key() :
+                         kv.double_key();
+        double otherKey = (other.kv.key_case() == KeyValue::kIntKey) ? other.kv.int_key() :
+                          (other.kv.key_case() == KeyValue::kLongKey) ? other.kv.long_key() :
+                          other.kv.double_key();
+        return thisKey < otherKey;
+        }
+
     // Handle comparison between numeric (int, long, double) and char/string types
     switch (kv.key_case()) {
         case KeyValue::kIntKey:
@@ -57,21 +70,10 @@ bool KeyValueWrapper::operator<(const KeyValueWrapper& other) const {
             break;
 
         default:
-            throw std::invalid_argument("Unsupported key type for comparison.");
+            throw std::invalid_argument("KeyValueWrapper::operator<() : Line 73 : Unsupported key type for comparison.");
     }
 
-    // Handle mixed numeric-type comparisons by casting both to double
-    if ((kv.key_case() == KeyValue::kIntKey || kv.key_case() == KeyValue::kLongKey || kv.key_case() == KeyValue::kDoubleKey) &&
-        (other.kv.key_case() == KeyValue::kIntKey || other.kv.key_case() == KeyValue::kLongKey || other.kv.key_case() == KeyValue::kDoubleKey)) {
 
-        double thisKey = (kv.key_case() == KeyValue::kIntKey) ? kv.int_key() :
-                         (kv.key_case() == KeyValue::kLongKey) ? kv.long_key() :
-                         kv.double_key();
-        double otherKey = (other.kv.key_case() == KeyValue::kIntKey) ? other.kv.int_key() :
-                          (other.kv.key_case() == KeyValue::kLongKey) ? other.kv.long_key() :
-                          other.kv.double_key();
-        return thisKey < otherKey;
-    }
 
     // Handle same-type comparisons
     switch (kv.key_case()) {
@@ -86,7 +88,7 @@ bool KeyValueWrapper::operator<(const KeyValueWrapper& other) const {
         case KeyValue::kStringKey:
             return kv.string_key() < other.kv.string_key();
         default:
-            throw std::invalid_argument("Invalid key type for comparison.");
+            throw std::invalid_argument("KeyValueWrapper::operator<() : Line 91 : Invalid key type for comparison.");
     }
 }
 
