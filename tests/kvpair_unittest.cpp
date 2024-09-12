@@ -17,31 +17,39 @@ TEST(KeyValueWrapperTest, TypeDeduction) {
     EXPECT_EQ(kv2.getValueType(), KeyValue::CHAR);
 }
 
+
 // Test for Key and Value Accessors
 TEST(KeyValueWrapperTest, Accessors) {
     KeyValueWrapper kv(100, "TestValue");
 
+    // Use the generated Protobuf accessors to verify the key and value
     EXPECT_EQ(kv.kv.int_key(), 100);
     EXPECT_EQ(kv.kv.string_value(), "TestValue");
 }
 
+
 // Test for Numeric Comparison of Keys
 TEST(KeyValueWrapperTest, NumericComparison) {
-    KeyValueWrapper kv1(10, "A");
-    KeyValueWrapper kv2(20, "B");
+    KeyValueWrapper kv1(10, "A");  // Key = 10
+    KeyValueWrapper kv2(20, "B");  // Key = 20
 
-    EXPECT_TRUE(kv1 < kv2);
-    EXPECT_FALSE(kv2 < kv1);
+    // Test numeric comparison (integers)
+    EXPECT_TRUE(kv1 < kv2);   // 10 < 20
+    EXPECT_FALSE(kv2 < kv1);  // 20 is not less than 10
 }
+
+
 
 // Test for Lexicographical Comparison of Keys
 TEST(KeyValueWrapperTest, LexicographicalComparison) {
-    KeyValueWrapper kv1("Apple", 1);
-    KeyValueWrapper kv2("Banana", 2);
+    KeyValueWrapper kv1("Apple", 1);  // Key = "Apple"
+    KeyValueWrapper kv2("Banana", 2); // Key = "Banana"
 
-    EXPECT_TRUE(kv1 < kv2);
-    EXPECT_FALSE(kv2 < kv1);
+    // Test lexicographical comparison (strings)
+    EXPECT_TRUE(kv1 < kv2);   // "Apple" < "Banana"
+    EXPECT_FALSE(kv2 < kv1);  // "Banana" is not less than "Apple"
 }
+
 
 // Test for Mixed Type Comparison Failure
 TEST(KeyValueWrapperTest, MixedTypeComparison) {
@@ -134,8 +142,8 @@ TEST(KeyValueWrapperTest, CompareCharWithDouble) {
     KeyValueWrapper kv1('a', 0);  // char key
     KeyValueWrapper kv2(99.99, 0);  // double key
 
-    EXPECT_FALSE(kv1 > kv2);
-    EXPECT_TRUE(kv2 > kv1);
+    EXPECT_FALSE(kv1 < kv2);
+    EXPECT_TRUE(kv2 < kv1);
 }
 
 TEST(KeyValueWrapperTest, CompareStringWithString) {
@@ -150,8 +158,13 @@ TEST(KeyValueWrapperTest, CompareDefaultKeyValues) {
     KeyValueWrapper kv1;  // Default KeyValueWrapper (no key set)
     KeyValueWrapper kv2(0, 0);  // Explicitly initialized to 0
 
-    EXPECT_TRUE(kv1 == kv2);  // Default and explicit 0 should be equal
+    // Check if kv1 is in the default (unset) state
+    EXPECT_TRUE(kv1.isDefault());
+
+    // Compare default and explicitly initialized KeyValueWrapper
+    EXPECT_FALSE(kv1 == kv2);  // kv1 is default (unset), kv2 is explicitly set to 0, so they should not be equal
 }
+
 
 // Test the printKeyValue method
 TEST(KeyValueWrapperTest, Print_KeyValue) {

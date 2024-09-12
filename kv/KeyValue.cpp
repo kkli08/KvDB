@@ -28,24 +28,57 @@ bool KeyValueWrapper::isEmpty() const {
 
 // Comparison operator
 bool KeyValueWrapper::operator<(const KeyValueWrapper& other) const {
-    // Compare based on which key type is set in the Protobuf message
-    if (kv.has_int_key() && other.kv.has_int_key()) {
-        return kv.int_key() < other.kv.int_key();
-    } else if (kv.has_long_key() && other.kv.has_long_key()) {
-        return kv.long_key() < other.kv.long_key();
-    } else if (kv.has_double_key() && other.kv.has_double_key()) {
-        return kv.double_key() < other.kv.double_key();
-    } else if (kv.has_string_key() && other.kv.has_string_key()) {
-        return kv.string_key() < other.kv.string_key();
-    } else if (kv.has_char_key() && other.kv.has_char_key()) {
-        return kv.char_key() < other.kv.char_key();
-    } else if (kv.has_int_key() && other.kv.has_string_key()) {
-        return true;  // Numeric keys are smaller than strings
-    } else if (kv.has_string_key() && other.kv.has_int_key()) {
-        return false;  // String keys are larger than numeric keys
+    // Handle comparison between numeric (int, long, double) and char/string types
+    switch (kv.key_case()) {
+        case KeyValue::kIntKey:
+        case KeyValue::kLongKey:
+        case KeyValue::kDoubleKey:
+            // Numeric types are always smaller than char and string
+            if (other.kv.key_case() == KeyValue::kCharKey || other.kv.key_case() == KeyValue::kStringKey) {
+                return true;
+            }
+            break;
+
+        case KeyValue::kCharKey:
+            // char is always smaller than string, but larger than numeric types
+            if (other.kv.key_case() == KeyValue::kStringKey) {
+                return true;
+            }
+            if (other.kv.key_case() == KeyValue::kIntKey || other.kv.key_case() == KeyValue::kLongKey || other.kv.key_case() == KeyValue::kDoubleKey) {
+                return false;
+            }
+            break;
+
+        case KeyValue::kStringKey:
+            // string is always larger than numeric and char types
+            if (other.kv.key_case() == KeyValue::kIntKey || other.kv.key_case() == KeyValue::kLongKey || other.kv.key_case() == KeyValue::kDoubleKey || other.kv.key_case() == KeyValue::kCharKey) {
+                return false;
+            }
+            break;
+
+        default:
+            throw std::invalid_argument("Unsupported key type for comparison.");
     }
-    throw std::invalid_argument("Unsupported or mismatched key types for comparison.");
+
+    // Handle same-type comparisons
+    switch (kv.key_case()) {
+        case KeyValue::kIntKey:
+            return kv.int_key() < other.kv.int_key();
+        case KeyValue::kLongKey:
+            return kv.long_key() < other.kv.long_key();
+        case KeyValue::kDoubleKey:
+            return kv.double_key() < other.kv.double_key();
+        case KeyValue::kCharKey:
+            return kv.char_key() < other.kv.char_key();
+        case KeyValue::kStringKey:
+            return kv.string_key() < other.kv.string_key();
+        default:
+            throw std::invalid_argument("Invalid key type for comparison.");
+    }
 }
+
+
+
 
 
 
@@ -71,53 +104,97 @@ bool KeyValueWrapper::operator>=(const KeyValueWrapper& other) const {
 // Comparison operator for key equality
 // Only for key
 bool KeyValueWrapper::operator==(const KeyValueWrapper& other) const {
-    if (kv.has_int_key() && other.kv.has_int_key()) {
-        return kv.int_key() == other.kv.int_key();
-    } else if (kv.has_long_key() && other.kv.has_long_key()) {
-        return kv.long_key() == other.kv.long_key();
-    } else if (kv.has_double_key() && other.kv.has_double_key()) {
-        return kv.double_key() == other.kv.double_key();
-    } else if (kv.has_string_key() && other.kv.has_string_key()) {
-        return kv.string_key() == other.kv.string_key();
-    } else if (kv.has_char_key() && other.kv.has_char_key()) {
-        return kv.char_key() == other.kv.char_key();
+    // If one of the keys is unset (default state), they can't be equal
+    if (kv.key_case() == KeyValue::KEY_NOT_SET || other.kv.key_case() == KeyValue::KEY_NOT_SET) {
+        return false;
     }
-    // Different types can't be equal
+
+    // First check if both keys have the same type or are numeric
+    if (kv.key_case() == other.kv.key_case()) {
+        // If both keys are of the same type, compare their values
+        switch (kv.key_case()) {
+            case KeyValue::kIntKey:
+                return kv.int_key() == other.kv.int_key();
+            case KeyValue::kLongKey:
+                return kv.long_key() == other.kv.long_key();
+            case KeyValue::kDoubleKey:
+                return kv.double_key() == other.kv.double_key();
+            case KeyValue::kStringKey:
+                return kv.string_key() == other.kv.string_key();
+            case KeyValue::kCharKey:
+                return kv.char_key() == other.kv.char_key();
+            default:
+                throw std::invalid_argument("Invalid key type for comparison.");
+        }
+    } else if (
+        (kv.key_case() == KeyValue::kIntKey || kv.key_case() == KeyValue::kLongKey || kv.key_case() == KeyValue::kDoubleKey) &&
+        (other.kv.key_case() == KeyValue::kIntKey || other.kv.key_case() == KeyValue::kLongKey || other.kv.key_case() == KeyValue::kDoubleKey)
+    ) {
+        // If both keys are numeric but of different types, cast to double and compare
+        double thisKey = (kv.key_case() == KeyValue::kIntKey) ? kv.int_key() :
+                         (kv.key_case() == KeyValue::kLongKey) ? kv.long_key() :
+                         kv.double_key();
+        double otherKey = (other.kv.key_case() == KeyValue::kIntKey) ? other.kv.int_key() :
+                          (other.kv.key_case() == KeyValue::kLongKey) ? other.kv.long_key() :
+                          other.kv.double_key();
+        return thisKey == otherKey;
+    }
+
+    // If the types are different and not numeric, they are not equal
     return false;
 }
 
 
 
+
+
 // Print key-value
 void KeyValueWrapper::printKeyValue() const {
-    std::cout << "Key Type: " << KeyValueWrapper::keyValueTypeToString(kv.key_type()) << std::endl;
+    std::cout << "Key Type: " << keyValueTypeToString(kv.key_type()) << std::endl;
 
-    if (kv.has_int_key()) {
-        std::cout << "Key: " << kv.int_key() << std::endl;
-    } else if (kv.has_long_key()) {
-        std::cout << "Key: " << kv.long_key() << std::endl;
-    } else if (kv.has_double_key()) {
-        std::cout << "Key: " << kv.double_key() << std::endl;
-    } else if (kv.has_string_key()) {
-        std::cout << "Key: " << kv.string_key() << std::endl;
-    } else if (kv.has_char_key()) {
-        std::cout << "Key: " << kv.char_key() << std::endl;
+    switch (kv.key_case()) {
+        case KeyValue::kIntKey:
+            std::cout << "Key: " << kv.int_key() << std::endl;
+        break;
+        case KeyValue::kLongKey:
+            std::cout << "Key: " << kv.long_key() << std::endl;
+        break;
+        case KeyValue::kDoubleKey:
+            std::cout << "Key: " << kv.double_key() << std::endl;
+        break;
+        case KeyValue::kStringKey:
+            std::cout << "Key: " << kv.string_key() << std::endl;
+        break;
+        case KeyValue::kCharKey:
+            std::cout << "Key: " << kv.char_key() << std::endl;
+        break;
+        default:
+            std::cout << "Key: Unset" << std::endl;
     }
 
-    std::cout << "Value Type: " << KeyValueWrapper::keyValueTypeToString(kv.value_type()) << std::endl;
+    std::cout << "Value Type: " << keyValueTypeToString(kv.value_type()) << std::endl;
 
-    if (kv.has_int_value()) {
-        std::cout << "Value: " << kv.int_value() << std::endl;
-    } else if (kv.has_long_value()) {
-        std::cout << "Value: " << kv.long_value() << std::endl;
-    } else if (kv.has_double_value()) {
-        std::cout << "Value: " << kv.double_value() << std::endl;
-    } else if (kv.has_string_value()) {
-        std::cout << "Value: " << kv.string_value() << std::endl;
-    } else if (kv.has_char_value()) {
-        std::cout << "Value: " << kv.char_value() << std::endl;
+    switch (kv.value_case()) {
+        case KeyValue::kIntValue:
+            std::cout << "Value: " << kv.int_value() << std::endl;
+        break;
+        case KeyValue::kLongValue:
+            std::cout << "Value: " << kv.long_value() << std::endl;
+        break;
+        case KeyValue::kDoubleValue:
+            std::cout << "Value: " << kv.double_value() << std::endl;
+        break;
+        case KeyValue::kStringValue:
+            std::cout << "Value: " << kv.string_value() << std::endl;
+        break;
+        case KeyValue::kCharValue:
+            std::cout << "Value: " << kv.char_value() << std::endl;
+        break;
+        default:
+            std::cout << "Value: Unset" << std::endl;
     }
 }
+
 
 
 // Enum to string conversion

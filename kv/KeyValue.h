@@ -42,6 +42,12 @@ public:
     bool isEmpty() const;
     KeyValue kv;  // Protobuf-generated KeyValue object
 
+    bool isDefault() const {
+        // Check if the key is unset
+        return kv.key_case() == KeyValue::KEY_NOT_SET && kv.value_case() == KeyValue::VALUE_NOT_SET;
+    }
+
+
 
 private:
 
