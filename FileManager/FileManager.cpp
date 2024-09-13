@@ -124,7 +124,7 @@ RedBlackTree* FileManager::loadFromDisk(const std::string& sst_filename) {
 
     // Deserialize the SST header
     SSTHeader sstHeader = SSTHeader::deserialize(file);
-    std::cout << "Header num_key_values: " << sstHeader.num_key_values << std::endl;
+    // std::cout << "Header num_key_values: " << sstHeader.num_key_values << std::endl;
 
     // Create a new RedBlackTree to store the deserialized key-value pairs
     auto* tree = new RedBlackTree();
