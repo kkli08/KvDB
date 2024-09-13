@@ -17,12 +17,15 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             cpp_compiler: cl
+            is_multiconfig: true
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
+            is_multiconfig: false
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
+            is_multiconfig: false
 
     steps:
       - uses: actions/checkout@v4
@@ -55,12 +58,18 @@ jobs:
           -S ${{ github.workspace }}
 
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+        run: |
+          if ${{ matrix.is_multiconfig }}; then
+            cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+          else
+            cmake --build ${{ steps.strings.outputs.build-output-dir }}
+          fi
 
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: |
-          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+          if ${{ matrix.is_multiconfig }}; then
             ctest --build-config ${{ matrix.build_type }}
           else
             ctest
+          fi
