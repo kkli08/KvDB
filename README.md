@@ -87,6 +87,8 @@ This will allow the updating of key-value pairs within the database.
 #### **kvdb::API::Delete()** (Coming Soon)
 This will allow the deletion of key-value pairs from the database.
 
+### Dataflow Diagram
+![DFD](/img/kvdb_lv0.jpg)
 
 ### Supported Platforms and Compilers
 The KV-Store system has been tested across multiple platforms and compilers. Below is the current support status:
