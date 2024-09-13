@@ -48,13 +48,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev
 
-      # Set up vcpkg for Windows (this is faster than manual clone)
-      - name: Set up vcpkg (Windows)
+      # Set up vcpkg for Windows (without the incorrect reference)
+      - name: Install dependencies (Windows)
         if: matrix.os == 'windows-latest'
-        uses: actions/setup-vcpkg@v1
-        with:
-          package-name: 'protobuf openssl'
-          vcpkg-triplet: 'x64-windows'
+        run: |
+          git clone https://github.com/Microsoft/vcpkg.git
+          ./vcpkg/bootstrap-vcpkg.bat
+          ./vcpkg/vcpkg install protobuf openssl
 
       - name: Set reusable strings
         id: strings
