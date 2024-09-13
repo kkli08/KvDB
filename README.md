@@ -1,7 +1,6 @@
 ## KvDB
 ![Unit Tests](https://github.com/kkli08/KvDB/actions/workflows/cmake-unit-tests-multi-platform.yml/badge.svg)
 
-
 Persistent key-value store database library. The KV-Storage database is a high-performance system designed to store 
 key-value pairs and allow efficient retrieval based on the key. This system is inspired by modern databases like 
 [LevelDB](https://github.com/google/leveldb) and [RocksDB](https://github.com/facebook/rocksdb), and supports multiple data types using C++ templates and Protocol Buffers.
