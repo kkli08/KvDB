@@ -30,13 +30,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install dependencies (Linux)
         if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y protobuf-compiler libssl-dev
 
-      - name: Install vcpkg
+      - name: Install vcpkg (Windows)
         if: matrix.os == 'windows-latest'
         run: |
           git clone https://github.com/Microsoft/vcpkg.git
@@ -65,11 +65,20 @@ jobs:
             cmake --build ${{ steps.strings.outputs.build-output-dir }}
           fi
 
-      - name: Test
+      - name: List files in build directory (Windows)
+        if: matrix.os == 'windows-latest'
+        run: dir ${{ steps.strings.outputs.build-output-dir }}
+
+      - name: List files in Release directory (Windows)
+        if: matrix.os == 'windows-latest'
+        run: dir ${{ steps.strings.outputs.build-output-dir }}\Release
+
+      - name: Run Tests on Linux
+        if: matrix.os != 'windows-latest'
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
-        run: |
-          if ${{ matrix.is_multiconfig }}; then
-            ctest --build-config ${{ matrix.build_type }}
-          else
-            ctest
-          fi
+        run: ./runTests
+
+      - name: Run Tests on Windows
+        if: matrix.os == 'windows-latest'
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}\Release
+        run: .\runTests.exe
