@@ -41,8 +41,18 @@ namespace kvdb {
         // update with KeyValueWrapper Class
         template<typename K, typename V>
         void Put(K key, V value);
+
+        // GET
         KeyValueWrapper Get(const KeyValueWrapper& KeyValueWrapper);
+        // Overloaded Get method (takes a key and uses it for lookup)
+        template<typename K>
+        KeyValueWrapper Get(K key);
+
+        // SCAN
         set<KeyValueWrapper> Scan(KeyValueWrapper small_key, KeyValueWrapper large_key);
+        // Overloaded Scan method (takes two keys and uses them for scanning)
+        template<typename K1, typename K2>
+        set<KeyValueWrapper> Scan(K1 small_key, K2 large_key);
 
     private:
         unique_ptr<Memtable> memtable;

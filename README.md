@@ -52,6 +52,8 @@ MyDB->Put(1.5, 'A');
 MyDB->Put("Hello", 1e8LL);
 
 // Retrieve the value by key
+auto kv = MyDB->Get("Hello");
+// Retrieve the value by `KeyValueWrapper` instance
 auto kv = MyDB->Get(KeyValueWrapper("Hello", ""));
 // Expected output: { key: "Hello", value: 1e8LL }
 ```
@@ -73,6 +75,9 @@ Scans the database for key-value pairs within a specified key range. The results
 // Scan for key-value pairs within a range
 auto MyDB = std::make_unique<kvdb::API>();
 MyDB->Open("database_name");
+// Scan by key
+std::set<KeyValueWrapper> results = MyDB->Scan(1, 10);
+// Scan by `KeyValueWrapper` instance
 std::set<KeyValueWrapper> results = MyDB->Scan(KeyValueWrapper(1, ""), KeyValueWrapper(10, ""));
 ```
 
@@ -86,11 +91,11 @@ This will allow the deletion of key-value pairs from the database.
 ### Supported Platforms and Compilers
 The KV-Store system has been tested across multiple platforms and compilers. Below is the current support status:
 
-| Platform      | Compiler       | Status |
-|---------------|----------------|--------|
-| Ubuntu 20.04  | GCC            | ✅     |
-| Ubuntu 20.04  | Clang          | ✅     |
-| Windows       | MSVC (cl)      | ✅     |
+| Platform     | Compiler       | Status |
+|--------------|----------------|--------|
+| Ubuntu ARM64 | GCC            | ✅     |
+| Ubuntu ARM64 | Clang          | ✅     |
+| Windows x86  | MSVC (cl)      | ✅     |
 
 
 ### Roadmap & Features

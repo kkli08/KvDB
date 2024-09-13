@@ -129,10 +129,10 @@ TEST(APITest, MixedDataTypesInsertAndGet) {
     db->Put("key4", 400.5);
 
     // Retrieve the values using the keys
-    KeyValueWrapper result1 = db->Get(KeyValueWrapper(1, ""));
-    KeyValueWrapper result2 = db->Get(KeyValueWrapper("key2", ""));
-    KeyValueWrapper result3 = db->Get(KeyValueWrapper(3.5, ""));
-    KeyValueWrapper result4 = db->Get(KeyValueWrapper("key4", ""));
+    KeyValueWrapper result1 = db->Get(1);
+    KeyValueWrapper result2 = db->Get("key2");
+    KeyValueWrapper result3 = db->Get(3.5);
+    KeyValueWrapper result4 = db->Get("key4");
 
     // Verify the returned values are correct
     EXPECT_EQ(result1.kv.string_value(), "value1");
