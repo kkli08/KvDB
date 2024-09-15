@@ -81,6 +81,26 @@ target_link_libraries(runTests gtest gtest_main OpenSSL::Crypto ${Protobuf_LIBRA
 # Register tests with CTest
 add_test(NAME runTests COMMAND runTests)
 
+# ---- MAIN TARGET ----
+# List of source files
+set(SOURCE_FILES
+        main.cpp
+        api/api.cpp
+        memtable/Memtable.cpp
+        tree/BinaryTree.cpp
+        tree/TreeNode.cpp
+        tree/RedBlackTree.cpp
+        SSTIndex/SSTIndex.cpp
+        kv/KeyValue.cpp
+        FileManager/FileManager.cpp
+)
+
+# Add the executable
+add_executable(main ${SOURCE_FILES} ${PROTO_SRCS})
+
+# Link Protobuf and OpenSSL to the main target
+target_link_libraries(main OpenSSL::Crypto ${Protobuf_LIBRARIES})
+
 # Include directories (header files)
 include_directories(
         ${PROJECT_SOURCE_DIR}/api
@@ -90,6 +110,7 @@ include_directories(
         # ${PROJECT_SOURCE_DIR}/AesEncryption
         ${PROJECT_SOURCE_DIR}/kv
         ${PROJECT_SOURCE_DIR}/FileManager
+        ${PROJECT_SOURCE_DIR}/protobuf
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}
 )
