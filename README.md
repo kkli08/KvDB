@@ -127,6 +127,10 @@ message KeyValue {
 ### Dataflow Diagram
 ![DFD](/img/kvdb_lv0.jpg)
 
+### UML
+![UML](img/uml/kvdb_s2_uml_v2.0.jpg)
+
+
 ### Supported Platforms and Compilers
 The KV-Store system has been tested across multiple platforms and compilers. Below is the current support status:
 
