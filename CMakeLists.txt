@@ -73,6 +73,8 @@ add_executable(runTests
         kv/KeyValue.cpp
         ${PROTO_SRCS}
         tests/treenode_unittests.cpp
+        bufferPool/BufferPool.cpp
+        bufferPool/BufferPool.h
 )
 
 # Link Google Test and OpenSSL to the test executable
@@ -93,6 +95,8 @@ set(SOURCE_FILES
         SSTIndex/SSTIndex.cpp
         kv/KeyValue.cpp
         FileManager/FileManager.cpp
+        bufferPool/BufferPool.cpp
+        bufferPool/BufferPool.h
 )
 
 # Add the executable
@@ -111,6 +115,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/kv
         ${PROJECT_SOURCE_DIR}/FileManager
         ${PROJECT_SOURCE_DIR}/protobuf
+        ${PROJECT_SOURCE_DIR}/bufferPool
         ${CMAKE_CURRENT_BINARY_DIR}
         ${PROJECT_SOURCE_DIR}
 )

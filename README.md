@@ -125,7 +125,7 @@ message KeyValue {
 }
 ```
 ### Dataflow Diagram
-![DFD](/img/kvdb_lv0.jpg)
+![DFD](/img/dfd/kvdb_lv0_v2.0.jpg)
 
 ### UML
 ![UML](img/uml/kvdb_s2_uml_v2.0.jpg)
