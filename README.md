@@ -89,6 +89,41 @@ This will allow the updating of key-value pairs within the database.
 #### **kvdb::API::Delete()** (Coming Soon)
 This will allow the deletion of key-value pairs from the database.
 
+### SST file layout
+![SSTFile](img/SSTFileLayout/SSTFileLayout_v2.0.jpg)
+
+> Using **Protocol Buffer** for data serialization
+
+```protobuf
+message KeyValue {
+  oneof key {
+    int32 int_key = 1;
+    int64 long_key = 2;
+    double double_key = 3;
+    string string_key = 4;
+    string char_key = 5;  // Protobuf doesn't have a char type,  use a single-character string
+  }
+
+  oneof value {
+    int32 int_value = 6;
+    int64 long_value = 7;
+    double double_value = 8;
+    string string_value = 9;
+    string char_value = 10;
+  }
+
+  enum KeyValueType {
+    INT = 0;
+    LONG = 1;
+    DOUBLE = 2;
+    CHAR = 3;
+    STRING = 4;
+  }
+
+  KeyValueType key_type = 11;
+  KeyValueType value_type = 12;
+}
+```
 ### Dataflow Diagram
 ![DFD](/img/kvdb_lv0.jpg)
 
