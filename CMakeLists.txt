@@ -75,6 +75,8 @@ add_executable(runTests
         tests/treenode_unittests.cpp
         bufferPool/BufferPool.cpp
         bufferPool/BufferPool.h
+        tree/BTree.cpp
+        tree/BTree.h
 )
 
 # Link Google Test and OpenSSL to the test executable
@@ -97,6 +99,8 @@ set(SOURCE_FILES
         FileManager/FileManager.cpp
         bufferPool/BufferPool.cpp
         bufferPool/BufferPool.h
+        tree/BTree.cpp
+        tree/BTree.h
 )
 
 # Add the executable

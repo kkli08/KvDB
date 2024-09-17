@@ -11,6 +11,8 @@
 #include "KeyValue.h" // Assuming this wraps the Protobuf KeyValue
 #include "SSTIndex.pb.h"     // Protobuf-generated header for SSTIndex and SSTInfo
 #include <filesystem>        // C++17 lib
+#include "BufferPool.h"
+#include <memory>
 
 namespace fs = std::filesystem;
 using namespace std;
@@ -23,6 +25,7 @@ struct SSTInfo {
 
 class SSTIndex {
 public:
+    SSTIndex(size_t bufferPoolCapacity, EvictionPolicy policy);
     SSTIndex();
     ~SSTIndex() = default;
 
@@ -50,6 +53,12 @@ public:
     void Scan(const KeyValueWrapper& smallestKey, const KeyValueWrapper& largestKey, set<KeyValueWrapper>& res); // Scan in all SST files
     void ScanInSST(const KeyValueWrapper& smallestKey, const KeyValueWrapper& largestKey, const std::string& filename, set<KeyValueWrapper>& res); // Scan in one SST file
 
+    /*
+     * Buffer Pool
+     *
+     */
+    // void Set
+
     // Helper functions
     void set_path(fs::path _path);
     fs::path get_path() const { return path; }
@@ -58,6 +67,7 @@ private:
     deque<SSTInfo*> index;
     fs::path path;
     FileManager fileManager;
+    unique_ptr<BufferPool> bufferPool;
 
     // Helper for serializing/deserializing Protobuf files
     void serializeToFile(const sstindex::SSTIndex& sstIndexProto, const std::string& filename);

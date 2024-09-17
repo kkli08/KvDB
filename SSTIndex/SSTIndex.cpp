@@ -8,8 +8,8 @@
 #include <sstream>
 #include "FileManager.h"
 #include "KeyValue.h"
-
-#define RECORD_SIZE 18
+#include "BufferPool.h"
+#include <memory>
 
 // Constructor: Initialize path
 SSTIndex::SSTIndex() {
@@ -18,6 +18,15 @@ SSTIndex::SSTIndex() {
         fs::create_directories(path);  // Ensure the directory exists
     }
     fileManager.setDirectory(path);
+}
+
+SSTIndex::SSTIndex(size_t bufferPoolCapacity, EvictionPolicy policy): fileManager() {
+    path = fs::path("defaultDB");
+    if (!fs::exists(path)) {
+        fs::create_directories(path);  // Ensure the directory exists
+    }
+    fileManager.setDirectory(path);
+    bufferPool = make_unique<BufferPool>(bufferPoolCapacity, policy, &fileManager);
 }
 
 // Add a new SST to the index
@@ -76,6 +85,10 @@ void SSTIndex::getAllSSTs() {
 // Search in a specific SST file
 KeyValueWrapper SSTIndex::SearchInSST(const std::string& filename, const KeyValueWrapper& _key) {
     RedBlackTree* tree = fileManager.loadFromDisk(filename);
+
+    // Replace with buffer pool
+    // Use buffer pool to get the RedBlackTree* associated with the filename
+    // RedBlackTree* tree = bufferPool->get(filename);
     if (!tree) {
         throw std::runtime_error("SSTIndex::SearchInSST() >>>> Failed to load SST file: " + filename);
     }
@@ -112,6 +125,11 @@ void SSTIndex::Scan(const KeyValueWrapper& smallestKey, const KeyValueWrapper& l
 // Scan a specific SST file
 void SSTIndex::ScanInSST(const KeyValueWrapper& smallestKey, const KeyValueWrapper& largestKey, const std::string& filename, set<KeyValueWrapper>& resultSet) {
     RedBlackTree* tree = fileManager.loadFromDisk(filename);
+
+    // Replace with Buffer Pool
+    // Use buffer pool to get the RedBlackTree* associated with the filename
+    // RedBlackTree* tree = bufferPool->get(filename);
+
     if (!tree) {
         throw std::runtime_error("SSTIndex::ScanInSST() >>>> Failed to load SST file: " + filename);
     }
