@@ -162,7 +162,7 @@ message KeyValue {
 ![DFD](/img/dfd/kvdb_lv0_v2.0.jpg)
 
 ### UML
-![UML](img/uml/kvdb_s2_uml_v2.0.jpg)
+![UML](img/uml/kvdb_s2_uml_v2.1.jpg)
 
 
 ### Supported Platforms and Compilers
