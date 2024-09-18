@@ -251,33 +251,47 @@ TEST(SSTIndexTest, FlushWithOneInstanceRetrieveWithAnother) {
     fs::remove_all(test_path);
 }
 
+
 TEST(SSTIndexTest, SearchInSingleSSTFile) {
-    // Create a Memtable and insert key-value pairs
-    Memtable* memtable = new Memtable(10); // small threshold
-    memtable->set_path(fs::path("test_db"));
+    {
+        // Create a Memtable and insert key-value pairs
+        auto memtable = std::make_unique<Memtable>(10); // small threshold
+        memtable->set_path(fs::path("test_db"));
 
-    // Insert key-value pairs into the memtable
-    memtable->put(KeyValueWrapper(1, "one"));
-    memtable->put(KeyValueWrapper(2, "two"));
-    memtable->put(KeyValueWrapper(3, "three"));
+        // Insert key-value pairs into the memtable
+        memtable->put(KeyValueWrapper(1, "one"));
+        memtable->put(KeyValueWrapper(2, "two"));
+        memtable->put(KeyValueWrapper(3, "three"));
 
-    // Flush the Memtable to an SST file
-    FlushSSTInfo info = memtable->file_manager.flushToDisk(memtable->getTree()->inOrderFlushToSst());
+        // Flush the Memtable to an SST file
+        FlushSSTInfo info = memtable->file_manager.flushToDisk(memtable->getTree()->inOrderFlushToSst());
 
-    // Create an SSTIndex instance
-    SSTIndex sstIndex;
-    sstIndex.set_path(fs::path("test_db"));
+        // Create an SSTIndex instance with buffer pool parameters
+        size_t bufferPoolCapacity = 10;
+        SSTIndex sstIndex(bufferPoolCapacity, EvictionPolicy::LRU);
+        sstIndex.set_path(fs::path("test_db"));
 
-    // Search for an existing key in the SST file
-    KeyValueWrapper result = sstIndex.SearchInSST(info.fileName, KeyValueWrapper(2, ""));
-    EXPECT_FALSE(result.isEmpty());
-    EXPECT_EQ(result.kv.int_key(), 2);
-    EXPECT_EQ(result.kv.string_value(), "two");
+        // Manually add the flushed SST file to the SSTIndex
+        sstIndex.addSST(info.fileName, info.smallest_key, info.largest_key);
+        // cout << "bp0" << endl;
 
-    // Clean up
-    delete memtable;
+        // Search for an existing key in the SST file
+        KeyValueWrapper result = sstIndex.SearchInSST(info.fileName, KeyValueWrapper(2, ""));
+        // cout << "bp1" << endl;
+        EXPECT_FALSE(result.isEmpty());
+        EXPECT_EQ(result.kv.int_key(), 2);
+        EXPECT_EQ(result.kv.string_value(), "two");
+        // cout << "bp2" << endl;
+
+        // Explicitly destroy sstIndex and memtable by ending the scope
+    } // All objects are destroyed here
+
+    // Now it's safe to remove the test_db directory
     fs::remove_all("test_db");
+    // cout << "bp3" << endl;
 }
+
+
 
 TEST(SSTIndexTest, SearchNonExistentKeyInSingleSSTFile) {
     // Create a Memtable and insert key-value pairs
@@ -422,7 +436,6 @@ TEST(SSTIndexTest, SearchForNonExistentKey) {
     delete memtable;
     fs::remove_all("test_db");
 }
-
 
 TEST(SSTIndexTest, SearchAcrossMultipleSSTFiles) {
     // Create a Memtable with a threshold of 3

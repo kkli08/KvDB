@@ -12,12 +12,13 @@
 #include <memory>
 
 // Constructor: Initialize path
-SSTIndex::SSTIndex() {
+SSTIndex::SSTIndex(): fileManager() {
     path = fs::path("defaultDB");
     if (!fs::exists(path)) {
         fs::create_directories(path);  // Ensure the directory exists
     }
     fileManager.setDirectory(path);
+    bufferPool = make_unique<BufferPool>(100, EvictionPolicy::LRU, &fileManager);
 }
 
 SSTIndex::SSTIndex(size_t bufferPoolCapacity, EvictionPolicy policy): fileManager() {
@@ -84,17 +85,16 @@ void SSTIndex::getAllSSTs() {
 
 // Search in a specific SST file
 KeyValueWrapper SSTIndex::SearchInSST(const std::string& filename, const KeyValueWrapper& _key) {
-    RedBlackTree* tree = fileManager.loadFromDisk(filename);
+    // RedBlackTree* tree = fileManager.loadFromDisk(filename);
 
     // Replace with buffer pool
     // Use buffer pool to get the RedBlackTree* associated with the filename
-    // RedBlackTree* tree = bufferPool->get(filename);
+    RedBlackTree* tree = bufferPool->get(filename);
     if (!tree) {
         throw std::runtime_error("SSTIndex::SearchInSST() >>>> Failed to load SST file: " + filename);
     }
 
     KeyValueWrapper result = tree->getValue(_key);
-    delete tree;  // Clean up tree
     return result;
 }
 
@@ -124,11 +124,11 @@ void SSTIndex::Scan(const KeyValueWrapper& smallestKey, const KeyValueWrapper& l
 
 // Scan a specific SST file
 void SSTIndex::ScanInSST(const KeyValueWrapper& smallestKey, const KeyValueWrapper& largestKey, const std::string& filename, set<KeyValueWrapper>& resultSet) {
-    RedBlackTree* tree = fileManager.loadFromDisk(filename);
+    // RedBlackTree* tree = fileManager.loadFromDisk(filename);
 
     // Replace with Buffer Pool
     // Use buffer pool to get the RedBlackTree* associated with the filename
-    // RedBlackTree* tree = bufferPool->get(filename);
+    RedBlackTree* tree = bufferPool->get(filename);
 
     if (!tree) {
         throw std::runtime_error("SSTIndex::ScanInSST() >>>> Failed to load SST file: " + filename);
@@ -139,7 +139,6 @@ void SSTIndex::ScanInSST(const KeyValueWrapper& smallestKey, const KeyValueWrapp
             resultSet.insert(kv);
         }
     });
-    delete tree;
 }
 
 // Helper method: Serialize the Protobuf SSTIndex to a file
@@ -174,6 +173,7 @@ void SSTIndex::set_path(fs::path _path) {
         fs::create_directories(_path);
     }
     fileManager.setDirectory(_path);
+
     path = _path;
 }
 
