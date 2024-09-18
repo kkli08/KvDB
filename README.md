@@ -5,15 +5,7 @@ Persistent key-value store database library. The KV-Storage database is a high-p
 key-value pairs and allow efficient retrieval based on the key. This system is inspired by modern databases like 
 [LevelDB](https://github.com/google/leveldb) and [RocksDB](https://github.com/facebook/rocksdb), and supports multiple data types using C++ templates and Protocol Buffers.
 
-### Supported Data Types
-> 2024-09-12 Restructure with `Protobuf`
 
-> 2024-09-09 Support Template<typename K, typename V>
-```c++
-enum KeyValueType { INT, LONG, DOUBLE, CHAR, STRING };
-```
-
-> 2024-08-28 Support <int_64, int_64>
 ### Operations
 
 #### **kvdb::API::Open(string db_name)**
@@ -119,6 +111,16 @@ This will allow the updating of key-value pairs within the database.
 
 #### **kvdb::API::Delete()** (Coming Soon)
 This will allow the deletion of key-value pairs from the database.
+
+### Supported Data Types
+> 2024-09-12 Restructure with `Protobuf`
+
+> 2024-09-09 Support Template<typename K, typename V>
+```c++
+enum KeyValueType { INT, LONG, DOUBLE, CHAR, STRING };
+```
+
+> 2024-08-28 Support <int_64, int_64>
 
 ### SST file layout
 ![SSTFile](img/SSTFileLayout/SSTFileLayout_v2.0.jpg)
