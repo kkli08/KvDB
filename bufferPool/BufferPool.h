@@ -27,6 +27,9 @@ public:
     // Retrieves the RedBlackTree* associated with the filename.
     RedBlackTree* get(const std::string& filename);
 
+    // Checks if a file exists in the buffer pool.
+    bool fileExistsInPool(const std::string& filename) const;
+
 private:
     size_t capacity;
     EvictionPolicy policy;
@@ -40,18 +43,21 @@ private:
     std::unordered_map<std::string, std::list<std::string>::iterator> lruMap;
 
     // For Clock policy
-    std::vector<std::string> clockVector;
-    size_t clockHand;
-    std::unordered_map<std::string, bool> referenceBits;
+    struct ClockEntry {
+        std::string filename;
+        RedBlackTree* tree;
+        bool referenceBit;
+    };
+    std::vector<ClockEntry> clockEntries; // Fixed-size vector for clock
+    size_t handPosition;
 
     // For Random policy
     std::vector<std::string> randomVector;
     std::mt19937 rng;
 
     // Eviction functions
-    void evictIfNecessary();
     void evictLRU();
-    void evictClock();
+    void evictClock(const std::string& newFilename, RedBlackTree* newTree);
     void evictRandom();
 
     // Helper functions
@@ -59,4 +65,5 @@ private:
 };
 
 #endif // BUFFERPOOL_H
+
 

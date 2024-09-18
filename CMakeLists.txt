@@ -60,6 +60,7 @@ add_executable(runTests
         # tests/encryption_unittest.cpp
         tests/kvpair_unittest.cpp
         tests/file_manager_unittest.cpp
+        tests/bufferpool_unittest.cpp
 
         # Source files required by tests
         tree/BinaryTree.cpp
@@ -77,6 +78,7 @@ add_executable(runTests
         bufferPool/BufferPool.h
         tree/BTree.cpp
         tree/BTree.h
+        tests/bufferpool_unittest.cpp
 )
 
 # Link Google Test and OpenSSL to the test executable
