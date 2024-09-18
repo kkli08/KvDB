@@ -54,6 +54,9 @@ namespace kvdb {
         template<typename K1, typename K2>
         set<KeyValueWrapper> Scan(K1 small_key, K2 large_key);
 
+        // Set buffer pool parameters
+        void SetBufferPoolParameters(size_t capacity, EvictionPolicy policy);
+
     private:
         unique_ptr<Memtable> memtable;
         unique_ptr<SSTIndex> index;

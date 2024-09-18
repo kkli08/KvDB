@@ -30,6 +30,11 @@ public:
     // Checks if a file exists in the buffer pool.
     bool fileExistsInPool(const std::string& filename) const;
 
+    size_t getCapacity() const {return capacity;};
+    EvictionPolicy getPolicy() const {return policy;};
+
+    void reset(size_t newCapacity, EvictionPolicy newPolicy);
+
 private:
     size_t capacity;
     EvictionPolicy policy;

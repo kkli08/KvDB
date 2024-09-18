@@ -178,3 +178,15 @@ void SSTIndex::set_path(fs::path _path) {
 }
 
 
+void SSTIndex::SetBufferPoolParameters(size_t capacity, EvictionPolicy policy) {
+    // Check if the parameters are different
+    if (bufferPool->getCapacity() == capacity && bufferPool->getPolicy() == policy) {
+        // No changes needed
+        return;
+    }
+
+    // Reset the buffer pool with new parameters
+    bufferPool->reset(capacity, policy);
+}
+
+

@@ -157,4 +157,14 @@ namespace kvdb {
     }
   }
 
+
+  void API::SetBufferPoolParameters(size_t capacity, EvictionPolicy policy) {
+    check_if_open();
+    if (index) {
+      index->SetBufferPoolParameters(capacity, policy);
+    } else {
+      throw std::runtime_error("Index is not initialized.");
+    }
+  }
+
 }

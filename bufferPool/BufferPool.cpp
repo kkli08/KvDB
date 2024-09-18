@@ -16,6 +16,18 @@ BufferPool::~BufferPool() {
     for (auto& pair : cache) {
         delete pair.second;
     }
+
+    cache.clear();
+
+    // Clear eviction policy data structures
+    if (policy == EvictionPolicy::LRU) {
+        lruList.clear();
+        lruMap.clear();
+    } else if (policy == EvictionPolicy::CLOCK) {
+        clockEntries.clear();
+    } else if (policy == EvictionPolicy::RANDOM) {
+        randomVector.clear();
+    }
 }
 
 RedBlackTree* BufferPool::get(const std::string& filename) {
@@ -134,4 +146,34 @@ void BufferPool::evictRandom() {
     randomVector.erase(randomVector.begin() + idx);
 }
 
+void BufferPool::reset(size_t newCapacity, EvictionPolicy newPolicy) {
+    // Step 1: Clean up existing resources
+    // Delete all RedBlackTree objects
+    for (auto& pair : cache) {
+        delete pair.second;
+    }
+    cache.clear();
+
+    // Clear eviction policy data structures
+    if (policy == EvictionPolicy::LRU) {
+        lruList.clear();
+        lruMap.clear();
+    } else if (policy == EvictionPolicy::CLOCK) {
+        clockEntries.clear();
+        handPosition = 0;
+    } else if (policy == EvictionPolicy::RANDOM) {
+        randomVector.clear();
+    }
+
+    // Step 2: Set new parameters
+    capacity = newCapacity;
+    policy = newPolicy;
+
+    // Step 3: Re-initialize data structures
+    if (policy == EvictionPolicy::CLOCK) {
+        clockEntries.resize(capacity);
+        handPosition = 0;
+    }
+    // No need to resize or re-initialize for LRU and RANDOM policies
+}
 

@@ -63,6 +63,9 @@ public:
     void set_path(fs::path _path);
     fs::path get_path() const { return path; }
 
+    // Set buffer pool parameters
+    void SetBufferPoolParameters(size_t capacity, EvictionPolicy policy);
+
 private:
     deque<SSTInfo*> index;
     fs::path path;

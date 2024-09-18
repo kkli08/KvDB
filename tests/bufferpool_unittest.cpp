@@ -337,3 +337,43 @@ TEST(BufferPoolTest, ConcurrentAccess) {
     fs::remove_all("test_db_concurrent");
 }
 
+TEST(BufferPoolTest, ResetFunctionality) {
+    // Setup FileManager and initial BufferPool
+    FileManager fileManager(fs::path("test_db_reset"));
+    size_t initialCapacity = 2;
+    BufferPool bufferPool(initialCapacity, EvictionPolicy::LRU, &fileManager);
+
+    // Create SST files
+    std::vector<KeyValueWrapper> kv_pairs1 = { KeyValueWrapper(1, "one") };
+    std::vector<KeyValueWrapper> kv_pairs2 = { KeyValueWrapper(2, "two") };
+    FlushSSTInfo info1 = fileManager.flushToDisk(kv_pairs1);
+    FlushSSTInfo info2 = fileManager.flushToDisk(kv_pairs2);
+
+    // Access SST files
+    bufferPool.get(info1.fileName);
+    bufferPool.get(info2.fileName);
+
+    // Verify initial state
+    EXPECT_TRUE(bufferPool.fileExistsInPool(info1.fileName));
+    EXPECT_TRUE(bufferPool.fileExistsInPool(info2.fileName));
+
+    // Reset the buffer pool with new parameters
+    size_t newCapacity = 3;
+    EvictionPolicy newPolicy = EvictionPolicy::CLOCK;
+    bufferPool.reset(newCapacity, newPolicy);
+
+    // Verify that the cache is empty after reset
+    EXPECT_FALSE(bufferPool.fileExistsInPool(info1.fileName));
+    EXPECT_FALSE(bufferPool.fileExistsInPool(info2.fileName));
+
+    // Access SST files again
+    bufferPool.get(info1.fileName);
+    bufferPool.get(info2.fileName);
+
+    // Verify new state
+    EXPECT_TRUE(bufferPool.fileExistsInPool(info1.fileName));
+    EXPECT_TRUE(bufferPool.fileExistsInPool(info2.fileName));
+
+    // Clean up
+    fs::remove_all("test_db_reset");
+}
