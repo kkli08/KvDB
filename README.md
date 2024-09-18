@@ -82,6 +82,37 @@ std::set<KeyValueWrapper> results = MyDB->Scan(1, 10);
 // Scan by `KeyValueWrapper` instance
 std::set<KeyValueWrapper> results = MyDB->Scan(KeyValueWrapper(1, ""), KeyValueWrapper(10, ""));
 ```
+#### **kvdb::API::SetBufferPoolParameters(size_t capacity, EvictionPolicy policy)**
+Set/reset buffer pool `size_t::` **capacity** and `EvictionPolicy::` **policy** (`LRU`, `CLOCK`, `RANDOM`)
+```c++
+EvictionPolicy newPolicy = EvictionPolicy::LRU;
+EvictionPolicy newPolicy = EvictionPolicy::CLOCK;
+EvictionPolicy newPolicy = EvictionPolicy::RANDOM;
+```
+> This method will clear all the previous cache in the buffer pool.
+
+```c++
+// Open the database
+auto MyDB = std::make_unique<kvdb::API>();
+MyDB->Open("database_name");
+
+// Set buffer pool parameters
+size_t Capacity = 20;
+EvictionPolicy Policy = EvictionPolicy::CLOCK;
+MyDB->SetBufferPoolParameters(newCapacity, Policy);
+
+// Reset 
+size_t newCapacity = 100;
+EvictionPolicy Policy = EvictionPolicy::LRU;
+MyDB->SetBufferPoolParameters(newCapacity, Policy);
+
+// Perform database operations
+MyDB->Put(1, "value1");
+KeyValueWrapper value = MyDB->Get(1);
+
+// Close the database
+MyDB->Close();
+```
 
 #### **kvdb::API::Update()** (Coming Soon)
 This will allow the updating of key-value pairs within the database.
@@ -95,6 +126,7 @@ This will allow the deletion of key-value pairs from the database.
 > Using **Protocol Buffer** for data serialization
 
 ```protobuf
+syntax = "proto3";
 message KeyValue {
   oneof key {
     int32 int_key = 1;
